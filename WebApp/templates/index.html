@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO Game</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>UNO Game - Debug Version</h1>
+    <div>
+        <label for="num_players">Select Number of Players:</label>
+        <select id="num_players">
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+        </select>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <h3>Players</h3>
+    <div id="players"></div>
+    <h3>Current layer</h3>
+    <div id="current_player"></div>
+    <h3>Discrad Pile</h3>
+    <div id="discard_pile"></div>
+    <h3>Player Hand</h3>
+    <div id="player_hand"></div>
+    <button onclick="callUNO()">Call UNO!</button>
+    <button onclick="drawCard()">Draw Card</button>
+    <div id="color_picker" style="display:none;">
+        <button onclick="chooseColor('Red')">Red</button>
+        <button onclick="chooseColor('Green')">Green</button>
+        <button onclick="chooseColor('Blue')">Blue</button>
+        <button onclick="chooseColor('Yellow')">Yellow</button>
+    </div>
+    <h2>Game Log</h2>
+    <div id="game_log"></div>
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
