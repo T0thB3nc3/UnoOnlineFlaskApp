@@ -5,18 +5,20 @@ function startGame() {
     $.ajax({
         url: '/start_game',
         type: 'POST',
-        contentType: 'application/json',  // Az adat típusát JSON-ra állítjuk
-        data: JSON.stringify({ num_players: numPlayers }),  // JSON formátumban küldjük az adatokat
+        contentType: 'application/json',
+        data: JSON.stringify({ num_players: numPlayers }),
         success: function(response) {
-            gameStarted = true;
-            $('#game_log').append('<p>' + response.status + '</p>');
-            displayPlayers(response.players);
-            displayCurrentPlayer(response.current_player);
-            updateGameState();
+            if (response.status === 'Game started') {
+                $('#main-menu').hide();  // Elrejtjük a főmenüt
+                $('#game-container').show();  // Megjelenítjük a játéktér elemeit
+
+                // Frissíthetjük a játékosokat és más adatokat
+                $('#game-id').text('Game #661071 (Sample code)');  // A játék azonosítója
+                updateGameState(response);  // Játék állapotának frissítése
+            }
         },
-        error: function(xhr, status, error) {
-            console.error("Error: " + error);
-            $('#game_log').append('<p>Error: ' + error + '</p>');
+        error: function(error) {
+            alert('Error starting game: ' + error.responseJSON.status);
         }
     });
 }
@@ -35,52 +37,82 @@ function displayCurrentPlayer(currentPlayer) {
     currentPlayerDiv.append(`<p>Current Player: ${currentPlayer}</p>`);
 }
 
+function displayOpponentHands(opponentHands, playerAvatars) {
+    Object.keys(opponentHands).forEach(opponent => {
+        const cardsContainer = $(`#${opponent}-cards`);
+        cardsContainer.empty(); // Törli a korábbi kártyákat
+        for (let i = 0; i < opponentHands[opponent].length; i++) {
+            const cardBack = $('<div>').addClass('card-back'); // Hátlapok
+            cardsContainer.append(cardBack);
+        }
+    });
+}
+
 function updateGameState() {
     if (gameStarted) {
         $.get('/current_game_state', function(response) {
+            // Frissítjük a dobópaklit
             displayDiscardPile(response.discard_pile);
-            displayPlayerHand(response.player_hands[response.current_player]);
-            // GYőztes esetén kihirdeti a győztest
+            
+            // Játékosok kezének megjelenítése
+            displayPlayerHand(response.player_hands[response.current_player]);  // Aktuális játékos kártyái
+            displayOpponentHands(response.player_hands, response.current_player);  // Többi játékos kártyái
+            
+            // Ha van nyertes, akkor jelezzük
             if (response.winner) {
-                alert(`${response.winner} won the game!`);
+                $('#game-status').text(`${response.winner} won the game!`);  // Nyertes kijelzése egy UI elemen
+                gameStarted = false;  // Leállítjuk a játékot
+            } else {
+                $('#game-status').text('Game is ongoing...');
             }
         });
     }
 }
 
-function displayDiscardPile(discardPile) {
-    const discardDiv = $('#discard_pile');
-    discardDiv.empty();
-    discardDiv.append(`<p>Discard Pile: ${discardPile[discardPile.length - 1]}</p>`);
+
+function displayDiscardPile(card) {
+    let cardImage = `{{ url_for('static', filename='cards/${card.color}_${card.type}.svg') }}`;
+    $('#discard-pile').html(`<img src="${cardImage}" alt="Discarded Card">`);
 }
 
-function displayPlayerHand(hand) {
-    const handDiv = $('#player_hand');
-    handDiv.empty();
-    hand.forEach(card => {
-        const cardElement = $('<button>').text(card).on('click', function() {
-            playCard(card);  // Kártya lejátszása, üres funkcióval
-        });
-        handDiv.append(cardElement);
+function displayPlayerHand(playerHand) {
+    const handContainer = $('#player-hand');
+    handContainer.empty(); // kéz kiürítése
+
+    playerHand.forEach(card => {
+        // img tag az összes kártyához
+        const cardImage = `{{ url_for('static', filename='cards/${card.color}_${card.type}.svg') }}`;
+        const cardElement = $('<img>')
+            .attr('src', cardImage)
+            .attr('alt', `${card.color} ${card.type} card`)
+            .addClass('card')
+            .click(() => playCard(card)); // Kattintás akció hozzáadása
+
+        // Kártya hozzáadása a kézhez
+        handContainer.append(cardElement);
     });
 }
 
+
 function playCard(card) {
-    const currentPlayer = $('#current_player p').text().replace('Current Player: ', '');
+    const selectedCard = card;  // A kijátszott kártya
+
     $.ajax({
         url: '/play_card',
         type: 'POST',
-        contentType: 'application/json',  // JSON típusú adatot küldünk
-        data: JSON.stringify({ player: currentPlayer, card: card }),  // JSON formátumban
+        contentType: 'application/json',
+        data: JSON.stringify({
+            player: 'Player',  // A játékos azonosítása
+            card: selectedCard
+        }),
         success: function(response) {
-            $('#game_log').append('<p>' + response.status + '</p>'); // Módosításra kerül a felület létrehozásakor !TODO
-            displayCurrentPlayer(response.next_player);
-            displayPlayerHand(response.player_hand);
-            displayDiscardPile(response.discard_pile);
+            if (response.status === 'Card played') {
+                displayPlayerHand(response.player_hand);  // Frissítjük a játékos kezét
+                updateGameState(response);  // Játék állapotának frissítése
+            }
         },
-        error: function(xhr, status, error) {
-            console.error("Error: " + error);
-            $('#game_log').append('<p>Error: ' + error + '</p>');
+        error: function(error) {
+            alert('Error playing card: ' + error.responseJSON.status);
         }
     });
 }
@@ -91,18 +123,17 @@ function drawCard() {
         url: '/draw_card',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ player: currentPlayer }),  // JSON formátumban
+        data: JSON.stringify({
+            player: 'Player'
+        }),
         success: function(response) {
-            $('#game_log').append('<p>' + response.status + '</p>');
-            if (response.card) {
-                $('#game_log').append(`<p>You drew a ${response.card}</p>`);
+            if (response.status === 'Card drawn') {
+                displayPlayerHand(response.player_hand);  // Frissítjük a játékos kezét
+                updateGameState(response);  // Játék állapotának frissítése
             }
-            displayCurrentPlayer(response.next_player);
-            displayPlayerHand(response.player_hand);
         },
-        error: function(xhr, status, error) {
-            console.error("Error: " + error);
-            $('#game_log').append('<p>Error: ' + error + '</p>');
+        error: function(error) {
+            alert('Error drawing card: ' + error.responseJSON.status);
         }
     });
 }
@@ -112,19 +143,18 @@ function callUno() {
     $.ajax({
         url: '/call_uno',
         type: 'POST',
-        contentType: 'application/json',  // JSON típusú adatot küldünk
-        data: JSON.stringify({ player: currentPlayer }),  // JSON formátumban
+        contentType: 'application/json',
+        data: JSON.stringify({
+            player: 'Player'
+        }),
         success: function(response) {
-            $('#game_log').append('<p>' + response.status + '</p>');
-            if (response.uno_called) {
-                $('#game_log').append(`<p>${currentPlayer} has called UNO!</p>`);
+            if (response.status === 'UNO called successfully') {
+                alert('UNO has been called!');
+                updateGameState(response);  // Játék állapotának frissítése
             }
-            displayCurrentPlayer(response.next_player);
-            displayPlayerHand(response.player_hand);
         },
-        error: function(xhr, status, error) {
-            console.error("Error: " + error);
-            $('#game_log').append('<p>Error: ' + error + '</p>');
+        error: function(error) {
+            alert('Error calling UNO: ' + error.responseJSON.status);
         }
     });
 }

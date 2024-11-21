@@ -1,8 +1,7 @@
 from WebApp import app
 from flask import render_template,jsonify, request
 from scripts import game_logic
-# from scripts import load_in --- képi adatok bekérése majd itt következik
-# Játékpéldány létrehozása --- később játékmenetenként példányosítva történik
+# Játékpéldány létrehozása --- később játékmenetenként példányosítva történik (3.hét)
 game= game_logic.Game()
 
 @app.route('/')
@@ -13,7 +12,9 @@ def index():
 def start_game():
     data = request.get_json()  # JSON adatokat olvasunk be
     num_players = data.get('num_players')
-    
+    players = [f'Player {i+1}' for i in range(num_players)]
+    player_avatars = data.get('avatars') # !TODO
+    # Beviteli ellenőrzés (ritkán dob vissza hibaüzenetet)
     if num_players not in [2, 3, 4]:
         return jsonify({'status': 'Invalid number of players'}), 400
 
@@ -29,12 +30,12 @@ def start_game():
 
 @app.route('/play_card', methods=['POST'])
 def play_card():
-    data = request.get_json()  # JSON adatokat olvasunk be
+    data = request.get_json()
     player = data.get('player')
     card = data.get('card')
     color = data.get('color')  # Ha van színválasztás
     
-    # Itt ellenőrizzük a kártyát és végrehajtjuk a megfelelő lépést
+    # Ellenőrizzük, hogy a kártya a játékos kezében van-e, majd játsszuk le
     if card in game.player_hands[player]:
         game.play_card(player, card, color)
         return jsonify({
@@ -91,7 +92,10 @@ def current_game_state():
         'players': game.players,
         'current_player': game.players[game.current_player],
         'discard_pile': game.discard_pile,
-        'player_hands': game.player_hands,
+        'player_hands': {
+            player: len(cards) if player != game.players[game.current_player] else cards
+            for player, cards in game.player_hands.items()
+        },
         'winner': game.winner,
         'current_color': game.current_color
     })

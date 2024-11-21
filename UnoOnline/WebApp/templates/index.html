@@ -8,34 +8,61 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>UNO Game - Debug Version</h1>
-    <div>
-        <label for="num_players">Select Number of Players:</label>
+    <div id="main-menu">
+        <h1>Welcome to UNO Game</h1>
+        
+        <label for="num_players">Select number of players:</label>
         <select id="num_players">
             <option value="2">2 Players</option>
             <option value="3">3 Players</option>
             <option value="4">4 Players</option>
         </select>
-        <button onclick="startGame()">Start Game</button>
+
+        <button id="start-game" onclick="startGame()">Start Game</button>
     </div>
-    <h3>Players</h3>
-    <div id="players"></div>
-    <h3>Current layer</h3>
-    <div id="current_player"></div>
-    <h3>Discrad Pile</h3>
-    <div id="discard_pile"></div>
-    <h3>Player Hand</h3>
-    <div id="player_hand"></div>
-    <button onclick="callUNO()">Call UNO!</button>
-    <button onclick="drawCard()">Draw Card</button>
-    <div id="color_picker" style="display:none;">
-        <button onclick="chooseColor('Red')">Red</button>
-        <button onclick="chooseColor('Green')">Green</button>
-        <button onclick="chooseColor('Blue')">Blue</button>
-        <button onclick="chooseColor('Yellow')">Yellow</button>
+
+    <div id="game-container" style="display: none;">
+        <!-- Top bar -->
+        <div class="top-bar">
+            <button class="stats-btn">Statisztika</button>
+            <div class="logo">UNO LOGO</div>
+            <div class="game-id">Game #661071 (Sample code)</div>
+        </div>
+
+        <!-- Main game area -->
+        <div id="main-game-area">
+            <div id="opponent-hands" class="opponent-hands">
+                <!-- Ellenfelek kártyáinak helye -->
+                <div id="opponent-1" class="opponent">
+                    <p>Opponent 1</p>
+                    <div class="card-backs" id="opponent-1-cards"></div>
+                </div>
+                <div id="opponent-2" class="opponent">
+                    <p>Opponent 2</p>
+                    <div class="card-backs" id="opponent-2-cards"></div>
+                </div>
+                <div id="opponent-3" class="opponent">
+                    <p>Opponent 3</p>
+                    <div class="card-backs" id="opponent-3-cards"></div>
+                </div>
+            </div>
+            <div id="game-center" class="game-center">
+                <!-- Dobópakli és játékmechanikai gombok -->
+                <div id="discard-pile">Discard Pile</div>
+                <button id="uno-btn" disabled>UNO!</button>
+            </div>
+            <div id="player-hand" class="player-hand">
+                <!-- Aktuális játékos kártyái -->
+            </div>
+        </div>
+
+        <!-- Bottom bar -->
+        <div class="bottom-bar">
+            <button class="help-btn">Help</button>
+            <div id="game-log">Game log will appear here</div>
+        </div>
     </div>
-    <h2>Game Log</h2>
-    <div id="game_log"></div>
+
     <script src="{{ url_for('static', filename='game.js') }}"></script>
 </body>
 </html>

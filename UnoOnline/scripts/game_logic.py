@@ -1,7 +1,8 @@
+import os
 import random
 # Kártyák és színek alapdefiníciói
-COLORS = ['Red', 'Green', 'Blue', 'Yellow']
-ACTION_CARDS = ['Skip', 'Reverse', 'Draw Two', 'Wild', 'Wild Draw Four']
+COLORS = ['red', 'green', 'blue', 'yellow']
+ACTION_CARDS = ['skip', 'reverse', 'draw_two', 'wild', 'wild_draw_four']
 NUMBERS = [str(i) for i in range(0, 10)]
 DECK = [f"{color} {num}" for color in COLORS for num in NUMBERS] + \
        [f"{color} {action}" for color in COLORS for action in ACTION_CARDS]
@@ -21,6 +22,7 @@ class Game:
 
     def start_game(self, num_players):
         self.players = ['Player'] + self.bot_players[:num_players - 1]
+        self.avatars = self.assign_random_avatars(self.players)
         self.deal_cards()
         self.discard_pile.append(self.deck.pop())  # Kezdő lap a feldobott pakliból
 
@@ -30,11 +32,11 @@ class Game:
     def play_card(self, player, card, color=None):
         if card in self.player_hands[player]:
             # Ha a kártya "Wild" vagy "Wild Draw Four", akkor színt választunk
-            if 'Wild' in card:
+            if 'wild' in card:
                 self.current_color = color
                 self.discard_pile.append(card)
                 self.player_hands[player].remove(card)
-                if 'Draw Four' in card:
+                if 'draw_four' in card:
                     self.draw_four(player)
                 return True
             
@@ -44,11 +46,11 @@ class Game:
                 self.discard_pile.append(card)
                 
                 # Akciók kezelése
-                if "Skip" in card:
+                if "skip" in card:
                     self.skip_next = True
-                elif "Reverse" in card:
+                elif "reverse" in card:
                     self.direction *= -1
-                elif "Draw Two" in card:
+                elif "draw_two" in card:
                     self.draw_two(player)
                 
                 if len(self.player_hands[player]) == 1:
@@ -103,7 +105,7 @@ class Game:
     def check_uno_penalty(self, player):
         if len(self.player_hands[player]) == 1 and player not in self.uno_called:
             # Ha valaki UNO-t mondott, de nem jelezte, akkor 2 kártyát húz
-            self.player_hands[player].append(self.deck.pop()) # Tudom lehetne for ciklussal, de nincs az az Isten, hogy én 2 lapnak for ciklust írjak
+            self.player_hands[player].append(self.deck.pop()) 
             self.player_hands[player].append(self.deck.pop())
             return False
         return True
@@ -118,4 +120,10 @@ class Game:
             card = self.draw_card(player)  # Ha nincs érvényes kártya, akkor húz
         self.next_player() # Kör átadása a következő játékosnak
         return card
+    
+    def assign_random_avatars(players):
+        avatars = [os.path.splitext(file)[0] for file in os.listdir('WebApp\static\images\avatars') if file.endswith('.svg')] # Beolvasás
+        random.shuffle(avatars)  # Keverjük össze az avatarokat
+        player_avatars = {player: avatars.pop() for player in players if avatars}
+        return player_avatars
            
