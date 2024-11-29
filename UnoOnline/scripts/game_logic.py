@@ -18,11 +18,11 @@ class Game:
         self.winner = None
         self.uno_called = {}  # Tároljuk, hogy ki mondott UNO-t
         self.current_color = None  # A jelenlegi szín
-        self.bot_players = ['Bot 1', 'Bot 2', 'Bot 3']  # Botok (később más játékosok) !TODO
+        self.bot_players = ['Bot 1', 'Bot 2', 'Bot 3']  # Botok (később más játékosok) TODO
 
     def start_game(self, num_players):
         self.players = ['Player'] + self.bot_players[:num_players - 1]
-        self.avatars = self.assign_random_avatars(self.players)
+        # self.avatars = self.assign_random_avatars(self.players) PROBLÉMÁS, JAVÍTÁSRA SZORUL TODO
         self.deal_cards()
         self.discard_pile.append(self.deck.pop())  # Kezdő lap a feldobott pakliból
 
@@ -110,7 +110,7 @@ class Game:
             return False
         return True
 
-    def bot_play(self, player): # többjátékos esetén törlésre kerül !TODO
+    def bot_play(self, player): # többjátékos esetén nem használjuk TODO
         # A botok egyszerű algoritmus alapján játszanak: első érvényes kártyát kijátszák, ha nem tudnak, akkor húznak
         valid_cards = [card for card in self.player_hands[player] if self.valid_card(card)]
         if valid_cards:
@@ -122,7 +122,7 @@ class Game:
         return card
     
     def assign_random_avatars(players):
-        avatars = [os.path.splitext(file)[0] for file in os.listdir('WebApp\static\images\avatars') if file.endswith('.svg')] # Beolvasás
+        avatars = [os.path.splitext(file)[0] for file in os.listdir("WebApp\static\images\avatars") if file.endswith('.svg')] # Beolvasás
         random.shuffle(avatars)  # Keverjük össze az avatarokat
         player_avatars = {player: avatars.pop() for player in players if avatars}
         return player_avatars
