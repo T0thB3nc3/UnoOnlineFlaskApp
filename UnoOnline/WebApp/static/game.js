@@ -37,13 +37,20 @@ function displayCurrentPlayer(currentPlayer) {
     currentPlayerDiv.append(`<p>Current Player: ${currentPlayer}</p>`);
 }
 
-function displayOpponentHands(opponentHands, playerAvatars) {
+function displayOpponentHands(opponentHands, unoStatus) {
     Object.keys(opponentHands).forEach(opponent => {
-        const cardsContainer = $(`#${opponent}-cards`);
-        cardsContainer.empty(); // Törli a korábbi kártyákat
-        for (let i = 0; i < opponentHands[opponent].length; i++) {
-            const cardBack = $('<div>').addClass('card-back'); // Hátlapok
-            cardsContainer.append(cardBack);
+        const cardsLeft = opponentHands[opponent].length;
+        const unoCalled = unoStatus[opponent] || false;
+
+        // Update card count
+        $(`#${opponent}-cards-left`).text(cardsLeft);
+
+        // Update UNO status
+        const unoStatusElement = $(`#${opponent}-uno-status`);
+        if (unoCalled && cardsLeft === 1) {
+            unoStatusElement.addClass('active');
+        } else {
+            unoStatusElement.removeClass('active');
         }
     });
 }
@@ -75,40 +82,73 @@ function displayDiscardPile(card) {
     $('#discard-pile').html(`<img src="${cardImage}" alt="Discarded Card">`);
 }
 
+let currentIndex = 0;
+
 function displayPlayerHand(playerHand) {
     const handContainer = $('#player-hand');
-    handContainer.empty(); // kéz kiürítése
+    handContainer.empty();
 
-    playerHand.forEach(card => {
-        // img tag az összes kártyához
-        const cardImage = `{{ url_for('static', filename='cards/${card.color}_${card.type}.svg') }}`;
+    // Display a maximum of 7 cards
+    const visibleCards = playerHand.slice(currentIndex, currentIndex + 7);
+
+    visibleCards.forEach((card, index) => {
+        const cardImage = card.image_url; // Assume `card.image_url` contains the URL of the card image
         const cardElement = $('<img>')
             .attr('src', cardImage)
             .attr('alt', `${card.color} ${card.type} card`)
             .addClass('card')
-            .click(() => playCard(card)); // Kattintás akció hozzáadása
+            .click(() => playCard(card, index)); // Attach play card event
 
-        // Kártya hozzáadása a kézhez
         handContainer.append(cardElement);
     });
+
+    toggleArrows(playerHand.length);
 }
 
+function toggleArrows(cardCount) {
+    if (cardCount > 7) {
+        $('#left-arrow').toggleClass('visible', currentIndex > 0);
+        $('#right-arrow').toggleClass('visible', currentIndex + 7 < cardCount);
+    } else {
+        $('#left-arrow, #right-arrow').removeClass('visible');
+    }
+}
 
-function playCard(card) {
-    const selectedCard = card;  // A kijátszott kártya
+function scrollLeft() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        updateGameState(); // Refresh state
+    }
+}
+
+function scrollRight() {
+    const playerHand = getCurrentPlayerHand(); // Replace with the actual function to get the player's hand
+    if (currentIndex + 7 < playerHand.length) {
+        currentIndex++;
+        updateGameState(); // Refresh state
+    }
+}
+
+function playCard(card, cardIndex) {
+    const currentPlayer = $('#current_player p').text().replace('Current Player: ', '');
 
     $.ajax({
         url: '/play_card',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            player: 'Player',  // A játékos azonosítása
-            card: selectedCard
+            player: currentPlayer,
+            card: card
         }),
         success: function(response) {
             if (response.status === 'Card played') {
-                displayPlayerHand(response.player_hand);  // Frissítjük a játékos kezét
-                updateGameState(response);  // Játék állapotának frissítése
+                // Update discard pile
+                const cardImage = `{{ url_for('static', filename='cards/${card.color}_${card.type}.svg') }}`;
+                $('#discard-pile').html(`<img src="${cardImage}" alt="${card.color} ${card.type} card">`);
+
+                // Refresh player's hand
+                displayPlayerHand(response.player_hand);
+                updateGameState(response); // Update game state
             }
         },
         error: function(error) {
@@ -124,12 +164,12 @@ function drawCard() {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            player: 'Player'
+            player: currentPlayer
         }),
         success: function(response) {
             if (response.status === 'Card drawn') {
-                displayPlayerHand(response.player_hand);  // Frissítjük a játékos kezét
-                updateGameState(response);  // Játék állapotának frissítése
+                displayPlayerHand(response.player_hand);  // Refresh the player's hand
+                updateGameState(response);  // Update the game state
             }
         },
         error: function(error) {
@@ -145,12 +185,12 @@ function callUno() {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            player: 'Player'
+            player: currentPlayer
         }),
         success: function(response) {
             if (response.status === 'UNO called successfully') {
                 alert('UNO has been called!');
-                updateGameState(response);  // Játék állapotának frissítése
+                updateGameState(response);  // Refresh the game state
             }
         },
         error: function(error) {
