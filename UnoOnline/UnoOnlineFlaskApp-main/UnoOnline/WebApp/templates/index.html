@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO Game</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="main-menu">
+        <h1>Welcome to UNO Game</h1>
+        
+        <label for="num_players">Select number of players:</label>
+        <select id="num_players">
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+        </select>
+
+        <button id="start-game" onclick="startGame()">Quick Play</button>
+        <button id="private-game" onclick="privGame()">Private Game</button>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <!-- Top bar -->
+        <div class="top-bar">
+            <button class="stats-btn">Statisztika</button>
+            <div class="logo">UNO LOGO</div>
+            <div class="game-id">Game #661071 (Sample code)</div>
+        </div>
+
+        <!-- Main game area -->
+        <div id="main-game-area">
+            <div id="opponent-hands" class="opponent-hands">
+                <!-- Ellenfelek kártyái -->
+                <div id="opponent-1" class="opponent">
+                    <p>Opponent 1</p>
+                    <div class="opponent-card">
+                        <div class="card-back"></div>
+                        <div class="opponent-info">
+                            <p>Cards Left: <span id="opponent-1-cards-left">0</span></p>
+                            <p id="opponent-1-uno-status" class="uno-status">UNO!</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="opponent-2" class="opponent">
+                    <p>Opponent 2</p>
+                    <div class="opponent-card">
+                        <div class="card-back"></div>
+                        <div class="opponent-info">
+                            <p>Cards Left: <span id="opponent-2-cards-left">0</span></p>
+                            <p id="opponent-2-uno-status" class="uno-status">UNO!</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="opponent-3" class="opponent">
+                    <p>Opponent 3</p>
+                    <div class="opponent-card">
+                        <div class="card-back"></div>
+                        <div class="opponent-info">
+                            <p>Cards Left: <span id="opponent-3-cards-left">0</span></p>
+                            <p id="opponent-3-uno-status" class="uno-status">UNO!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="game-center" class="game-center">
+                <!-- Dobópakli és játékmechanikai gombok -->
+                <div id="discard-pile">Discard Pile</div>
+                <button id="uno-btn" disabled>UNO!</button>
+            </div>
+            <div id="player-hand" class="player-hand">
+                <!-- játékos kártyái, húzás/UNO -->
+                <button class="arrow left" id="left-arrow" onclick="scrollLeft()">&#9664;</button>
+                <div id="player-hand" class="card-display"></div>
+                <button class="arrow right" id="right-arrow" onclick="scrollRight()">&#9654;</button>
+                <button id="uno-button" onclick="callUno()" disabled>UNO!</button>
+                <button id="draw-card-button" onclick="drawCard()">Draw Card</button>
+            </div>
+        </div>
+
+        <!-- Bottom bar -->
+        <div class="bottom-bar">
+            <button class="help-btn">Help</button>
+            <div id="game-log">Game log will appear here</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
