@@ -1,5 +1,5 @@
 from os import environ
-from WebApp import app
+from WebApp import app,socketio
 
 
 if __name__ == '__main__':
@@ -8,4 +8,4 @@ if __name__ == '__main__':
         PORT = int(environ.get('SERVER_PORT','8000'))
     except ValueError:
         PORT = 8000
-    app.run(HOST, PORT)
+    socketio.run(app,host=HOST,port=PORT)
