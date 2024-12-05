@@ -79,6 +79,12 @@ class TestGameDatabase(unittest.TestCase):
         player = self.cursor.fetchone()
         self.assertIsNotNone(player, "Player creation failed.")
         player_id = player[0]
+        # Ellenőrizzük, hogy a szobához lett-e adva
+        self.cursor.execute("SELECT RoomID FROM Player WHERE Name = 'Player15'")
+        room_id = self.cursor.fetchone()
+        self.cursor.execute("SELECT PlayersCount FROM Room WHERE ID = ?", (room_id))
+        updated_room = self.cursor.fetchone()
+        self.assertEqual(updated_room[0], 1, f"PlayersCount should be 1, but got {updated_room[0]}.")
 
         # Most próbáljuk beléptetni a játékost a lobbyba
         self.db_handler.join_lobby(player_id)  # Csatlakozás egy lobbiszobához
@@ -95,7 +101,7 @@ class TestGameDatabase(unittest.TestCase):
         # Ellenőrizzük a szoba játékosszámát
         self.cursor.execute("SELECT PlayersCount FROM Room WHERE ID = ?", (room_id,))
         updated_room = self.cursor.fetchone()
-        self.assertEqual(updated_room[0], 1, f"PlayersCount should be 1, but got {updated_room[0]}.")
+        self.assertEqual(updated_room[0], 2, f"PlayersCount should be 2, but got {updated_room[0]}.")
 
         # Ellenőrizzük a lobby szoba létrehozását, ha új szoba lett létrehozva
         if updated_room[0] == 1:
@@ -114,6 +120,10 @@ class TestGameDatabase(unittest.TestCase):
         
         # Létrehozunk egy játékost a szobához
         self.db_handler.create_player("Player4", room_id)
+        # Szobaméret változásának ellenőrzése
+        self.cursor.execute("SELECT PlayersCount FROM Room WHERE ID = ?", (room_id,))
+        updated_room = self.cursor.fetchone()
+        self.assertEqual(updated_room[0], 1, f"PlayersCount should be 1, but got {updated_room[0]}.")
 
         # Lekérdezzük a játékos ID-ját közvetlenül a create_player után
         self.cursor.execute("SELECT ID FROM Player WHERE Name = 'Player4'")

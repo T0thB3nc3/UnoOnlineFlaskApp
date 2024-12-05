@@ -1,4 +1,72 @@
-let gameStarted = false;
+let inGame = false;
+
+function privMenu() {
+    $.ajax({
+        url: '/private_menu',
+        type: 'POST',
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.status === 'Private Menu') {
+                $('#game-modes').hide();
+                $('#private-menu').show();
+            }
+        },
+        error: function(error) {
+            alert('Unable to handle private sessions: ' + error.responseJSON.status);
+        }
+    });
+}
+
+function joinPrivate(){
+    TODO
+}
+function createPrivate(){
+    TODO
+}
+
+function backToModes(){
+    $.ajax({
+        url: '/back_to_modes',
+        type: 'POST',
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.status === 'Back From Private Menu') {
+                $('#game-modes').show();
+                $('#private-menu').hide();
+            }
+        },
+        error: function(error) {
+            alert('Unable to routing back to the game modes: ' + error.responseJSON.status);
+        }
+    });
+}
+
+function joinQuick(){
+    TODO
+}
+function enterLobby() {
+    $.ajax({
+        url: '/enter_lobby',
+        type: 'POST',
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.status === 'Entered lobby') {
+                $('#main-menu').hide();  // Elrejtjük a főmenüt
+                $('#lobby').show();  // Elrejtjük a lobbit 
+                $('#game-container').hide();  // Megjelenítjük a játéktér elemeit
+                $('#game-end').hide();  // Elrejtjük a főmenüt
+
+                // Frissíthetjük a játékosokat és más adatokat
+                $('#game-id').text('Game #661071 (Sample code)');  // A játék azonosítója 
+                updateGameState(response);  // Játék állapotának frissítése
+                TODO
+            }
+        },
+        error: function(error) {
+            alert('Error entering lobby: ' + error.responseJSON.status);
+        }
+    });
+}
 
 function startGame() {
     const numPlayers = parseInt($('#num_players').val());
@@ -6,15 +74,40 @@ function startGame() {
         url: '/start_game',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ num_players: numPlayers }),
         success: function(response) {
             if (response.status === 'Game started') {
                 $('#main-menu').hide();  // Elrejtjük a főmenüt
+                $('#lobby').hide();  // Elrejtjük a lobbit (ha aktív volt, mondjuk gyors játéknál előszobából jött)
                 $('#game-container').show();  // Megjelenítjük a játéktér elemeit
+                $('#game-end').hide();  // Elrejtjük a főmenüt
 
                 // Frissíthetjük a játékosokat és más adatokat
                 $('#game-id').text('Game #661071 (Sample code)');  // A játék azonosítója
                 updateGameState(response);  // Játék állapotának frissítése
+            }
+        },
+        error: function(error) {
+            alert('Error starting game: ' + error.responseJSON.status);
+        }
+    });
+}
+
+function gameEnd() {
+    $.ajax({
+        url: '/game_end',
+        type: 'POST',
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.status === 'Game ended') {
+                $('#main-menu').hide();  // Elrejtjük a főmenüt
+                $('#lobby').hide();  // Elrejtjük a lobbit (ha aktív volt, mondjuk gyors játéknál előszobából jött)
+                $('#game-container').hide();  // Megjelenítjük a játéktér elemeit
+                $('#game-end').show();  // Elrejtjük a főmenüt
+
+                // Frissíthetjük a játékosokat és más adatokat
+                $('#game-id').text('Game #661071 (Sample code)');  // A játék azonosítója
+                updateGameState(response);  // Játék állapotának frissítése
+                
             }
         },
         error: function(error) {

@@ -20,8 +20,8 @@ class Game:
         self.current_color = None  # A jelenlegi szín
         self.bot_players = ['Bot 1', 'Bot 2', 'Bot 3']  # Botok (később más játékosok) TODO
 
-    def start_game(self, num_players):
-        self.players = ['Player'] + self.bot_players[:num_players - 1]
+    def start_game(self,player_list):
+        self.players = player_list
         # self.avatars = self.assign_random_avatars(self.players) PROBLÉMÁS, JAVÍTÁSRA SZORUL TODO
         self.deal_cards()
         self.discard_pile.append(self.deck.pop())  # Kezdő lap a feldobott pakliból
@@ -122,7 +122,7 @@ class Game:
         return card
     
     def assign_random_avatars(players):
-        avatars = [os.path.splitext(file)[0] for file in os.listdir("WebApp\static\images\avatars") if file.endswith('.svg')] # Beolvasás
+        avatars = [os.path.splitext(file)[0] for file in os.listdir("WebApp/static/images/avatars") if file.endswith('.svg')] # Beolvasás
         random.shuffle(avatars)  # Keverjük össze az avatarokat
         player_avatars = {player: avatars.pop() for player in players if avatars}
         return player_avatars

@@ -1,7 +1,9 @@
 from WebApp import app
-from flask import render_template,jsonify, request
-from scripts import game_logic
-# Játékpéldány létrehozása --- később játékmenetenként példányosítva történik (3.hét)
+from flask import render_template,jsonify, request,session,redirect
+from flask_socketio import join_room,leave_room,send,SocketIO
+from scripts import game_logic # játékakciók
+from scripts.game_db import dbHandler as db # adatbázis kapcsolat
+
 game= game_logic.Game()
 
 @app.route('/')
@@ -9,18 +11,9 @@ def index():
     return render_template('index.html')
 
 @app.route('/start_game', methods=['POST'])
-def start_game():
-    data = request.get_json()  # JSON adatokat olvasunk be
-    num_players = data.get('num_players')
-    players = [f'Player {i+1}' for i in range(num_players)]
-    player_avatars = data.get('avatars') # !TODO
-    # Beviteli ellenőrzés (ritkán dob vissza hibaüzenetet)
-    if num_players not in [2, 3, 4]:
-        return jsonify({'status': 'Invalid number of players'}), 400
-
+def start_game(player_list):
     # A játék elindítása itt történik...
-    game.start_game(num_players)
-    
+    game.start_game(player_list)
     # A válaszban JSON adatot küldünk vissza
     return jsonify({
         'status': 'Game started',

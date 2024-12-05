@@ -36,9 +36,9 @@ def load_avatars(mappa: str):
     return avatars
 
 # Teszt futtatása
-cards = (load_cards_from_folder('WebApp\static\cards'))
+cards = (load_cards_from_folder('WebApp/static/cards'))
 for i in cards:
     print(i)
-avatars = load_avatars('WebApp\static\images\avatars')
+avatars = load_avatars('WebApp/static/images/avatars')
 for i in avatars:
     print(i)

@@ -12,7 +12,7 @@ CREATE TABLE Room (
 -- Player tábla újra létrehozása
 CREATE TABLE Player (
     ID INTEGER PRIMARY KEY AUTOINCREMENT,  -- Generált egyedi azonosító
-    RoomID INTEGER NOT NULL,               -- Idegen kulcs a Room.ID oszlopra
+    RoomID INTEGER,               -- Idegen kulcs a Room.ID oszlopra
     Name TEXT NOT NULL,                    -- Játékos neve
     FOREIGN KEY (RoomID) REFERENCES Room(ID) ON DELETE CASCADE  -- Kapcsolat a Room táblával
 );

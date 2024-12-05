@@ -12,7 +12,7 @@ class dbHandler:
             self.connection.commit()
         except sqlite3.IntegrityError:
             raise ValueError(f"Szoba {room_id} már létezik vagy az ID érvénytelen.")
-
+    
     def create_player(self, name, room_id):
         """Létrehoz egy játékost az adott szobában."""
         self.cursor.execute("SELECT PlayersCount FROM Room WHERE ID = ?", (room_id,))
@@ -28,6 +28,13 @@ class dbHandler:
 
     def delete_player(self, player_id):
         """Töröl egy játékost az ID alapján."""
+        # Ha benne volt egy szobában, akkor törölje onnan
+        ## Megkeresi a szobakódot
+        self.cursor.execute(f"SELECT RoomID FROM Player WHERE ID = {player_id}")
+        room_id = self.cursor.fetchone()
+        ## Megkeresi a játékosszámot, ls eggyel csökkenti
+        self.cursor.execute("UPDATE Room SET PlayersCount = PlayersCount - 1 WHERE ID = ?", (room_id,))
+        # Kitörli a táblából
         self.cursor.execute("DELETE FROM Player WHERE ID = ?", (player_id,))
         self.connection.commit()
 
@@ -50,9 +57,10 @@ class dbHandler:
             raise ValueError(f"Játékos {player_id} nem található.")
 
         print(f"Assigning Player {player_id} to Room {room_id}...")  # Debugging
-
-        self.cursor.execute("UPDATE Player SET RoomID = ? WHERE ID = ?", (room_id, player_id))
-        self.cursor.execute("UPDATE Room SET PlayersCount = PlayersCount + 1 WHERE ID = ?", (room_id,))
+        
+        if self.cursor.execute(f"SELECT RoomID from Player WHERE ID = {player_id}").fetchone() != room_id:
+            self.cursor.execute("UPDATE Player SET RoomID = ? WHERE ID = ?", (room_id, player_id))
+            self.cursor.execute("UPDATE Room SET PlayersCount = PlayersCount + 1 WHERE ID = ?", (room_id,))
         self.connection.commit()
 
         # Debugging: Ellenőrizzük a módosítást
@@ -71,8 +79,9 @@ class dbHandler:
             # Ha létezik szoba, akkor a játékost hozzáadjuk ahhoz
             room_id = available_room[0]
             print(f"Játékos {player_id} csatlakoztatása a szobához {room_id}...")  # Debugging print
-            self.cursor.execute("UPDATE Player SET RoomID = ? WHERE ID = ?", (room_id, player_id))
-            self.cursor.execute("UPDATE Room SET PlayersCount = PlayersCount + 1 WHERE ID = ?", (room_id,))
+            if self.cursor.execute(f"SELECT RoomID from Player WHERE ID = {player_id}").fetchone() != room_id:
+                self.cursor.execute("UPDATE Player SET RoomID = ? WHERE ID = ?", (room_id, player_id))
+                self.cursor.execute("UPDATE Room SET PlayersCount = PlayersCount + 1 WHERE ID = ?", (room_id,))
         else:
             # Ha nincs elérhető szoba, akkor új lobby szobát hozunk létre
             print(f"Nincs elérhető lobby a {player_id} számára. Új szoba létrehozása.")  # Debugging print

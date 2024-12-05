@@ -21,24 +21,6 @@ body {
     opacity: 0;
 }
 
-#num-players {
-    background: linear-gradient(45deg, #1E90FF, #FFD700);
-    border: 2px solid #333;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 18px;
-    color: white;
-}
-
-select {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-select:hover {
-    transform: scale(1.1);
-}
-
 #start-game {
     background-color: #FF6347;
     border-radius: 10px;

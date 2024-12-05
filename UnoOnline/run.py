@@ -8,4 +8,4 @@ if __name__ == '__main__':
         PORT = int(environ.get('SERVER_PORT','8000'))
     except ValueError:
         PORT = 8000
-    socketio.run(app,host=HOST,port=PORT)
+    socketio.run(app,host=HOST,port=PORT,debug=True)
